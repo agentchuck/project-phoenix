@@ -44,7 +44,11 @@ World::finalizeInput()
 char
 World::at(int i, int j)
 {
-  return mine[i][j];
+  if ((i < 1) || (i > width) ||
+      (j < 1) || (j > height)) {
+    return '#';
+  }
+  return mine[height - j][i - 1];
 }
 
 void

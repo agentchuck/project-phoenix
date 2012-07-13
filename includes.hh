@@ -16,6 +16,7 @@
 #include <queue>
 #include <sstream>
 #include <fstream>
+#include <assert.h>
 
 using namespace std;
 typedef long long ll;
