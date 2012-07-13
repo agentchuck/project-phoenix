@@ -13,6 +13,7 @@ class World {
     size_t height;
     int score;
     int lambdasRemaining;
+    int lambdasCollected;
 
     pii robotLocation;
     pii exitLocation;
@@ -25,9 +26,17 @@ class World {
     void finalizeInput();
 
     // Find out what is at a set of co-ordinates.
+    char at(pii location);
     char at(int i, int j);
+    // Change something at a co-ordinate.
+    void update(pii location, char changeTo);
+    void update(int i, int j, char changeTo);
     // Make a move and update the world.
     void update(char move);
+    void processGravity();
+
+    // Dump out the state
+    void dump();
 };
 
 #endif
