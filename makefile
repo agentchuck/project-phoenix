@@ -1,7 +1,7 @@
 CC=g++
 SOURCE_FILES=main.cpp
 
-go: main.cpp world.cpp
+go: main.cpp world.cpp world.hh
 	$(CC) main.cpp world.cpp -I. -o go
 
 .PHONY: clean

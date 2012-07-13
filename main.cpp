@@ -15,17 +15,17 @@ int main (int argc, char **argv)
   while (std::cin) {
     getline(std::cin, input_line);
     if (input_line.length() > 0) {
-      world.width = input_line.length();
-      world.height++;
-      cout << input_line << endl;
+      world.inputLine(input_line);
+      cerr << input_line << endl;
     }
   }
-  cout << world.width << "x" << world.height << endl;
+  cerr << world.width << "x" << world.height << endl;
+  world.finalizeInput();
 
   // Get the moves from a file
   ifstream inFile(argv[1]);
   inFile >> input_line;
-  cout << input_line << endl;
+  cerr << input_line << endl;
 
   // Parse moves.
   size_t num_moves = input_line.length();
