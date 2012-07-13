@@ -11,9 +11,17 @@ class World {
   public:
     size_t width;
     size_t height;
-    int score;
+    int moves;
     int lambdasRemaining;
     int lambdasCollected;
+    enum WorldState {
+      Initializing = 0,
+      Running,
+      Won,
+      Abort,
+      Dead
+    };
+    WorldState worldState;
 
     pii robotLocation;
     pii exitLocation;
@@ -24,6 +32,8 @@ class World {
     void inputLine(string input);
     // Finalize the input. This is called after all the input is read in.
     void finalizeInput();
+    // Calculate the current score.
+    int score();
 
     // Find out what is at a set of co-ordinates.
     char at(pii location);

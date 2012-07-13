@@ -3,9 +3,10 @@
 World::World() :
   width(0),
   height(0),
-  score(0),
+  moves(0),
   lambdasRemaining(0),
-  lambdasCollected(0)
+  lambdasCollected(0),
+  worldState(Initializing)
 {
   robotLocation.first = 0;
   robotLocation.second = 0;
@@ -42,9 +43,23 @@ World::finalizeInput()
 {
   robotLocation.second = height - robotLocation.second;
   exitLocation.second = height - exitLocation.second;
-
+  worldState = Running;
   cerr << "Robot at: " << robotLocation.first << "x" << robotLocation.second << endl;
   cerr << "Exit at: " << exitLocation.first << "x" << exitLocation.second << endl;
+}
+
+int
+World::score()
+{
+  int theScore = 25 * lambdasCollected;
+  theScore -= moves;
+  if (worldState == Won) {
+    theScore += 50 * lambdasCollected;
+  } else if (worldState == Abort) {
+    theScore += 25 * lambdasCollected;
+  }
+
+  return theScore;
 }
 
 char
@@ -85,6 +100,10 @@ World::update(char move)
   pii to = robotLocation;
   cerr << "--------------------------" << endl;
   cerr << "Move: " << move << endl;
+  if (worldState != Running) {
+    cerr << "Invalid state. No more moves allowed." << endl;
+    return;
+  }
   bool moveHorizontally = false;
   bool moveVertically = false;
 
@@ -108,6 +127,9 @@ World::update(char move)
     case 'W':
       break;
     case 'A':
+      if (worldState != Won) {
+        worldState = Abort;
+      }
       break;
     default:
       cerr << "Invalid input!!" << endl;
@@ -141,7 +163,9 @@ World::update(char move)
   } else if (movingInto == '\\') {
     lambdasCollected++;
     lambdasRemaining--;
-    score += 25;
+  } else if (movingInto == 'O') {
+    worldState = Won;
+    cerr << "YOU HAVE WON!" << endl;
   }
   if (invalidMove) {
     to = robotLocation;
@@ -155,7 +179,7 @@ World::update(char move)
   // Process gravity
   processGravity();
 
-  score--;
+  moves++;
   dump();
 }
 
@@ -170,6 +194,37 @@ World::processGravity()
         if (lambdasRemaining == 0) {
           update(i, j, 'O');
         }
+      } else if (thingAt == '*') {
+        char thingBelow = at(i, j-1);
+        pii  deadCheckAt(0, 0);
+        if (thingBelow == ' ') {
+          // Drop down
+          update(i, j, ' ');
+          update(i, j-1, '*');
+          deadCheckAt = make_pair(i, j-2);
+        } else if (thingBelow == '*') {
+          if ((at(i+1,j) == ' ') && (at(i+1,j-1) == ' ')) {
+            update(i, j, ' ');
+            update(i+1, j-1, '*');
+            deadCheckAt = make_pair(i+1, j-2);
+          } else if ((at(i-1,j) == ' ') && (at(i-1,j-1) == ' ')) {
+            update(i, j, ' ');
+            update(i-1, j-1, '*');
+            deadCheckAt = make_pair(i-1, j-2);
+          }
+        } else if (thingBelow == '\\') {
+          if ((at(i+1,j) == ' ') && (at(i+1,j-1) == ' ')) {
+            update(i, j, ' ');
+            update(i+1, j-1, '*');
+            deadCheckAt = make_pair(i+1, j-2);
+          }
+        }
+        if (at(deadCheckAt) == 'R') {
+          if (worldState == Running) {
+            worldState = Dead;
+            cerr << "YOU ARE DEAD!" << endl;
+          }
+        }
       }
     }
   }
@@ -179,7 +234,6 @@ World::processGravity()
 void
 World::dump()
 {
-  cerr << "Score: " << score << endl;
   int i, j;
   for(j = height; j > 0; j--) {
     for(i = 1; i <= width; i++) {
@@ -187,5 +241,5 @@ World::dump()
     }
     cerr << endl;
   }
-  cerr << "Score: " << score << endl;
+  cerr << "Score: " << score() << endl;
 }

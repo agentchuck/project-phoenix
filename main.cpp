@@ -3,7 +3,6 @@
 
 ofstream debug("debug.txt", fstream::trunc);
 
-
 //
 // Add variables here.
 //
@@ -31,6 +30,9 @@ int main (int argc, char **argv)
   int move_counter;
   for0n(move_counter, num_moves) {
     world.update(input_line[move_counter]);
+    if (world.worldState != World::Running) {
+      break;
+    }
   }
 
 
