@@ -1,8 +1,8 @@
 CC=g++
 SOURCE_FILES=main.cpp
 
-main: main.cpp
-	$(CC) main.cpp -o main
+go: main.cpp world.cpp
+	$(CC) main.cpp world.cpp -I. -o go
 
 .PHONY: clean
 clean:

@@ -11,5 +11,11 @@
 *.la
 *.a
 
+# Gvim swap files
+*.swp
+
+# Debugging stuff
+debug.txt
+
 # Generated execuatble
-main
+go
