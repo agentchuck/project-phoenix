@@ -179,7 +179,10 @@ World::update(char move)
   // Process gravity
   processGravity();
 
-  moves++;
+  if (move != 'A') {
+    // Special case...
+    moves++;
+  }
   dump();
 }
 
