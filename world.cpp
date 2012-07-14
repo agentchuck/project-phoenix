@@ -28,16 +28,17 @@ World::World(World const& fromWorld) :
   for0n(i, height) {
     mine[i] = fromWorld.mine[i];
   }
-  cerr << "Copied" << endl;
 }
 
-World::World(World& fromWorld, int fromI, int toI, int fromJ, int toJ) :
-  width(0),
-  height(0),
-  moves(0),
-  lambdasRemaining(0),
-  lambdasCollected(0),
-  worldState(Initializing)
+World::World(World const& fromWorld, int fromI, int toI, int fromJ, int toJ) :
+  width(fromWorld.width),
+  height(fromWorld.height),
+  moves(fromWorld.moves),
+  lambdasRemaining(fromWorld.lambdasRemaining),
+  lambdasCollected(fromWorld.lambdasCollected),
+  worldState(fromWorld.worldState),
+  robotLocation(fromWorld.robotLocation),
+  exitLocation(fromWorld.exitLocation)
 {
   // TODO: Make this work.
 }
@@ -86,8 +87,8 @@ World::finalizeInput()
   robotLocation.second = height - robotLocation.second;
   exitLocation.second = height - exitLocation.second;
   worldState = Running;
-  cerr << "Robot at: " << robotLocation.first << "x" << robotLocation.second << endl;
-  cerr << "Exit at: " << exitLocation.first << "x" << exitLocation.second << endl;
+  //cerr << "Robot at: " << robotLocation.first << "x" << robotLocation.second << endl;
+  //cerr << "Exit at: " << exitLocation.first << "x" << exitLocation.second << endl;
 }
 
 int
@@ -139,6 +140,8 @@ World::update(int i, int j, char changeTo)
 void
 World::update(char move)
 {
+  // Reset the changed flag.
+  changed = false;
   pii to = robotLocation;
   cerr << "--------------------------" << endl;
   cerr << "Move: " << move << endl;
@@ -218,14 +221,16 @@ World::update(char move)
   }
   robotLocation = to;
 
+  changed = (move != 'W');
+
   // Process gravity
   processGravity();
 
   if (move != 'A') {
-    // Special case...
+    // Special case. Don't count the move for abort for scoring.
     moves++;
   }
-  dump();
+  //dump();
 }
 
 void
@@ -270,10 +275,12 @@ World::processGravity()
             cerr << "YOU ARE DEAD!" << endl;
           }
         }
+        if (deadCheckAt.first != 0) {
+          changed = true;
+        }
       }
     }
   }
-
 }
 
 void

@@ -3,6 +3,8 @@ SOURCE_FILES=main.cpp \
 	     world.cpp
 TEAM_CODE=96495776
 
+all: go lifter
+
 go: main.cpp world.cpp world.hh
 	$(CC) main.cpp world.cpp -I. -o go
 

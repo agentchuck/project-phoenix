@@ -27,6 +27,8 @@ class World {
       Dead
     };
     WorldState worldState;
+    // Indicates if the last move changed anything.
+    bool changed;
 
     pii robotLocation;
     pii exitLocation;
@@ -35,7 +37,7 @@ class World {
     // Copy constructor
     World(World const& fromWorld);
     // construct a world from a subsection of another one.
-    World(World& fromWorld, int fromI, int toI, int fromJ, int toJ);
+    World(World const& fromWorld, int fromI, int toI, int fromJ, int toJ);
 
     // Read a world state in from stdin.
     void init();
