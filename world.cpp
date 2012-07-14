@@ -1,4 +1,7 @@
 #include <world.hh>
+#include <math.h>
+#include <iostream>
+#include <stdio.h>
 
 World::World() :
   width(0),
@@ -62,6 +65,22 @@ World::score()
   return theScore;
 }
 
+long
+World::hashMap()
+{
+  int size = height*width;
+  int code;
+  double addition = ( size % 101 ) / sqrt(3);
+  double sum = 0;
+  for (int i = 0; i < width; i++)
+    for (int j = 0; j < height; j++)
+    {
+      code = (int)mine[j][i];
+      sum += sin(code*0.001745329 + i*j/addition);
+    }
+  return modf(sum, &addition)*100000000; // not that I care about addition any longer
+}
+  
 char
 World::at(pii location)
 {
