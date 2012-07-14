@@ -10,19 +10,11 @@ World world;
 
 int main (int argc, char **argv)
 {
-  std::string input_line;
-  while (std::cin) {
-    getline(std::cin, input_line);
-    if (input_line.length() > 0) {
-      world.inputLine(input_line);
-    }
-  }
-  cerr << world.width << "x" << world.height << endl;
-  world.finalizeInput();
-  world.dump();
+  world.init();
 
   // Get the moves from a file
   ifstream inFile(argv[1]);
+  string input_line;
   inFile >> input_line;
 
   // Parse moves.
@@ -34,7 +26,6 @@ int main (int argc, char **argv)
       break;
     }
   }
-
 
   return 0;
 }

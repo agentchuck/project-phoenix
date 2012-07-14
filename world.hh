@@ -8,6 +8,11 @@ class World {
     // TODO: make better
     string mine[1000];
 
+    // Input a line
+    void inputLine(string input);
+    // Finalize the input. This is called after all the input is read in.
+    void finalizeInput();
+
   public:
     size_t width;
     size_t height;
@@ -27,11 +32,14 @@ class World {
     pii exitLocation;
 
     World();
+    // Copy constructor
+    World(World const& fromWorld);
+    // construct a world from a subsection of another one.
+    World(World& fromWorld, int fromI, int toI, int fromJ, int toJ);
 
-    // Input a line
-    void inputLine(string input);
-    // Finalize the input. This is called after all the input is read in.
-    void finalizeInput();
+    // Read a world state in from stdin.
+    void init();
+
     // Calculate the current score.
     int score();
 

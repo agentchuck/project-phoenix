@@ -14,6 +14,48 @@ World::World() :
   exitLocation.second = 0;
 }
 
+World::World(World const& fromWorld) :
+  width(fromWorld.width),
+  height(fromWorld.height),
+  moves(fromWorld.moves),
+  lambdasRemaining(fromWorld.lambdasRemaining),
+  lambdasCollected(fromWorld.lambdasCollected),
+  worldState(fromWorld.worldState),
+  robotLocation(fromWorld.robotLocation),
+  exitLocation(fromWorld.exitLocation)
+{
+  int i;
+  for0n(i, height) {
+    mine[i] = fromWorld.mine[i];
+  }
+  cerr << "Copied" << endl;
+}
+
+World::World(World& fromWorld, int fromI, int toI, int fromJ, int toJ) :
+  width(0),
+  height(0),
+  moves(0),
+  lambdasRemaining(0),
+  lambdasCollected(0),
+  worldState(Initializing)
+{
+  // TODO: Make this work.
+}
+
+
+void
+World::init()
+{
+  std::string input_line;
+  while (std::cin) {
+    getline(std::cin, input_line);
+    if (input_line.length() > 0) {
+      inputLine(input_line);
+    }
+  }
+  finalizeInput();
+}
+
 void
 World::inputLine(string input)
 {
