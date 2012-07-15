@@ -81,6 +81,7 @@ World::inputLine(string input)
     exitLocation.second = height;
   }
   lambdasRemaining += std::count(input.begin(), input.end(), '\\');
+  lambdasRemaining += std::count(input.begin(), input.end(), '@');
   height++;
 }
 
@@ -139,6 +140,24 @@ World::at(int i, int j)
   }
   return mine[height - j][i - 1];
 }
+
+char
+World::at(pii location, tMine const& curr_mine)
+{
+  return at(location.first, location.second, curr_mine);
+}
+
+char
+World::at(int i, int j,  tMine const& curr_mine)
+{
+  if ((i < 1) || (i > width) ||
+      (j < 1) || (j > height)) {
+    return '#';
+  }
+  return curr_mine[height - j][i - 1];
+}
+
+
 
 void
 World::update(pii location, char changeTo)
@@ -207,7 +226,7 @@ World::update(char move)
       (movingInto == 'L')) {
     // Invalid move.
     invalidMove = true;
-  } else if (movingInto == '*') {
+  } else if ((movingInto == '*') || (movingInto == '@')) {
     if (!moveHorizontally) {
       // Invalid move.
       invalidMove = true;
@@ -215,13 +234,13 @@ World::update(char move)
       if (at(to.first - 1, to.second) != ' ') {
         invalidMove = true;
       } else {
-        update(to.first - 1, to.second, '*');
+        update(to.first - 1, to.second, movingInto);
       }
     } else if (move == 'R') {
       if (at(to.first + 1, to.second) != ' ') {
         invalidMove = true;
       } else {
-        update(to.first + 1, to.second, '*');
+        update(to.first + 1, to.second, movingInto);
       }
     }
   } else if (movingInto == '\\') {
@@ -252,43 +271,58 @@ World::update(char move)
   //dump();
 }
 
+// Global variable: needs to be for every "gravity update" call.
+tMine oldMine;
+
 void
 World::processGravity()
 {
-  int i, j;
+  int i, j;  
+  memmove(oldMine, mine, sizeof(mine));
+  //for1n(i, width) {
+  //  for1n(j, height) {
+  //    oldMine[j][i] = mine[j][i];
+  //  }}
+
   for1n(i, width) {
     for1n(j, height) {
-      char thingAt = at(i, j);
+      char thingAt = at(i, j, oldMine);
       if (thingAt == 'L') {
         if (lambdasRemaining == 0) {
           update(i, j, 'O');
         }
-      } else if (thingAt == '*') {
-        char thingBelow = at(i, j-1);
+      } else if ((thingAt == '*') || (thingAt == '@')) {
+        char thingBelow = at(i, j-1, oldMine);
         pii  deadCheckAt(0, 0);
         if (thingBelow == ' ') {
-          // Drop down
+          // Drop down - FALL event
+          // Horock Crash check:
+          if ((thingAt == '@') && (at(i, j-2, oldMine) != ' ' )) thingAt = '\\';
           update(i, j, ' ');
-          update(i, j-1, '*');
+          update(i, j-1, thingAt);
           deadCheckAt = make_pair(i, j-2);
-        } else if (thingBelow == '*') {
-          if ((at(i+1,j) == ' ') && (at(i+1,j-1) == ' ')) {
+        } else if (thingBelow == '*' || thingBelow == '@') {
+          if ((at(i+1,j, oldMine) == ' ') && (at(i+1,j-1, oldMine) == ' ')) {
+          //Horock Crash check: N/A
+          //if ((thingAt == '@') && (at(i+1, j-2) != ' ' )) thingAt = '\\';
             update(i, j, ' ');
-            update(i+1, j-1, '*');
+            update(i+1, j-1, thingAt);
             deadCheckAt = make_pair(i+1, j-2);
-          } else if ((at(i-1,j) == ' ') && (at(i-1,j-1) == ' ')) {
+          } else if ((at(i-1,j, oldMine) == ' ') && (at(i-1,j-1, oldMine) == ' ')) {
+          //Horock Crash check: N/A)
+          //if ((thingAt == '@') && (at(i-1, j-2) != ' ' )) thingAt = '\\';
             update(i, j, ' ');
-            update(i-1, j-1, '*');
+            update(i-1, j-1, thingAt);
             deadCheckAt = make_pair(i-1, j-2);
           }
         } else if (thingBelow == '\\') {
-          if ((at(i+1,j) == ' ') && (at(i+1,j-1) == ' ')) {
+          if ((at(i+1,j, oldMine) == ' ') && (at(i+1,j-1, oldMine) == ' ')) {
             update(i, j, ' ');
-            update(i+1, j-1, '*');
+            update(i+1, j-1, thingAt);
             deadCheckAt = make_pair(i+1, j-2);
           }
         }
-        if (at(deadCheckAt) == 'R') {
+        if (at(deadCheckAt, oldMine) == 'R') {
           if (worldState == Running) {
             worldState = Dead;
             cerr << "YOU ARE DEAD!" << endl;
@@ -300,6 +334,7 @@ World::processGravity()
       }
     }
   }
+  dump();
 }
 
 void

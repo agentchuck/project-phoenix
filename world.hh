@@ -3,10 +3,12 @@
 
 #include <includes.hh>
 
+typedef string tMine[1000]; // another instance used at world.cpp
+
 class World {
   private:
-    // TODO: make better
-    string mine[1000];
+    // TODO: make better 
+    tMine mine;
 
     // Input a line
     void inputLine(string input);
@@ -51,6 +53,8 @@ class World {
     // Find out what is at a set of co-ordinates.
     char at(pii location);
     char at(int i, int j);
+    char at(pii location, tMine const& curr_mine);
+    char at(int i, int j, tMine const& curr_mine);
     // Change something at a co-ordinate.
     void update(pii location, char changeTo);
     void update(int i, int j, char changeTo);
