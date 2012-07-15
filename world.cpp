@@ -108,7 +108,7 @@ World::score()
   return theScore;
 }
 
-long
+World::HashType
 World::hashMap()
 {
   int size = height*width;

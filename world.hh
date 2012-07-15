@@ -14,6 +14,7 @@ class World {
     void finalizeInput();
 
   public:
+    typedef long HashType;
     size_t width;
     size_t height;
     int moves;
@@ -46,7 +47,7 @@ class World {
     int score();
 
     // Hash the map
-    long hashMap();
+    World::HashType hashMap();
     
     // Find out what is at a set of co-ordinates.
     char at(pii location);

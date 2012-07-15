@@ -21,6 +21,9 @@ State::State(World &worldRef, int scoreIn, string commandsIn) :
   commands(commandsIn)
 {}
 
+typedef std::map<World::HashType, State*> StateMapType;
+StateMapType stateMap;
+
 World world;
 string bestMove("A");
 int bestScore = 0;
@@ -65,14 +68,28 @@ int main (int argc, char **argv)
           bestMove = newState->commands;
         }
         if (newWorld->worldState == World::Running) {
-          bfsList.push_back(newState);
+          // Check if we've already had this state.
+          StateMapType::iterator it = stateMap.find(newWorld->hashMap());
+          if (it != stateMap.end()) {
+            // Check if the score is better.
+            if (newWorld->score() > (*it->second).world.score()) {
+              stateMap[newWorld->hashMap()] = newState;
+              bfsList.push_back(newState);
+            }
+          } else {
+            stateMap[newWorld->hashMap()] = newState;
+            bfsList.push_back(newState);
+          }
         } else if (newWorld->worldState == World::Won) {
           // TODO Bail out for now.
           cerr << "WON!";
           rxSIGINT = true;
+          free(newState);
+          free(newWorld);
           break;
         } else {
           free(newState);
+          free(newWorld);
         }
       } else {
         free(newWorld);
