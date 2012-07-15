@@ -45,6 +45,9 @@ class World {
     // Calculate the current score.
     int score();
 
+    // Hash the map
+    long hashMap();
+    
     // Find out what is at a set of co-ordinates.
     char at(pii location);
     char at(int i, int j);
