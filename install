@@ -1,1 +1,3 @@
+cd src
+make
 echo "Installation complete."
