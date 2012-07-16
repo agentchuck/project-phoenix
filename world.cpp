@@ -162,10 +162,10 @@ World::update(char move)
   // Reset the changed flag.
   changed = false;
   pii to = robotLocation;
-  cerr << "--------------------------" << endl;
-  cerr << "Move: " << move << endl;
+  //cerr << "--------------------------" << endl;
+  //cerr << "Move: " << move << endl;
   if (worldState != Running) {
-    cerr << "Invalid state. No more moves allowed." << endl;
+    //cerr << "Invalid state. No more moves allowed." << endl;
     return;
   }
   bool moveHorizontally = false;
@@ -201,7 +201,7 @@ World::update(char move)
 
   bool invalidMove = false;
   char movingInto = at(to);
-  cerr << "Moving into: " << movingInto << endl;
+  //cerr << "Moving into: " << movingInto << endl;
 
   if ((movingInto == '#') ||
       (movingInto == 'L')) {
@@ -229,7 +229,7 @@ World::update(char move)
     lambdasRemaining--;
   } else if (movingInto == 'O') {
     worldState = Won;
-    cerr << "YOU HAVE WON!" << endl;
+    //cerr << "YOU HAVE WON!" << endl;
   }
   if (invalidMove) {
     to = robotLocation;
@@ -291,7 +291,7 @@ World::processGravity()
         if (at(deadCheckAt) == 'R') {
           if (worldState == Running) {
             worldState = Dead;
-            cerr << "YOU ARE DEAD!" << endl;
+            //cerr << "YOU ARE DEAD!" << endl;
           }
         }
         if (deadCheckAt.first != 0) {

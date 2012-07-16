@@ -9,13 +9,13 @@ ofstream debug("debug.txt", fstream::trunc);
 //
 class State {
   public:
-    World &world;
+    World *world;
     int score;
     string commands;
 
-    State(World &worldRef, int scoreIn, string commandsIn);
+    State(World *worldRef, int scoreIn, string commandsIn);
 };
-State::State(World &worldRef, int scoreIn, string commandsIn) :
+State::State(World *worldRef, int scoreIn, string commandsIn) :
   world(worldRef),
   score(scoreIn),
   commands(commandsIn)
@@ -46,7 +46,7 @@ int main (int argc, char **argv)
   world.init();
 
   // Create a starting state
-  State* startState = new State(world, 0, "");
+  State* startState = new State(&world, 0, "");
 
   // Push the starting state to the bfs.
   bfsList.push_back(startState);
@@ -57,10 +57,10 @@ int main (int argc, char **argv)
 
     int i;
     for0n(i, 6) {
-      World* newWorld = new World(state->world);
+      World* newWorld = new World(*state->world);
       newWorld->update(moves[i]);
       if (newWorld->changed) {
-        State* newState = new State(*newWorld,
+        State* newState = new State(newWorld,
             newWorld->score(),
             state->commands + moves[i]);
         if (newWorld->score() > bestScore) {
@@ -72,7 +72,7 @@ int main (int argc, char **argv)
           StateMapType::iterator it = stateMap.find(newWorld->hashMap());
           if (it != stateMap.end()) {
             // Check if the score is better.
-            if (newWorld->score() > (*it->second).world.score()) {
+            if (newWorld->score() > (*it->second).score) {
               stateMap[newWorld->hashMap()] = newState;
               bfsList.push_back(newState);
             }
@@ -82,7 +82,7 @@ int main (int argc, char **argv)
           }
         } else if (newWorld->worldState == World::Won) {
           // TODO Bail out for now.
-          cerr << "WON!";
+          //cerr << "WON!";
           rxSIGINT = true;
           free(newState);
           free(newWorld);
