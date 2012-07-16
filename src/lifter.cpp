@@ -51,15 +51,15 @@ int main (int argc, char **argv)
   // Push the starting state to the bfs.
   bfsList.push_back(startState);
 
-  while(!bfsList.empty() && !rxSIGINT) {
+  int countdown = 1000000;
+  while(!bfsList.empty() && !rxSIGINT && (countdown-- > 0)) {
     // TODO: Full of memory leaks...
     State* state = bfsList.front();
 
     int i;
     for0n(i, 6) {
       World* newWorld = new World(*state->world);
-      newWorld->update(moves[i]);
-      if (newWorld->changed) {
+      if ((newWorld->update(moves[i])) && (newWorld->changed)) {
         State* newState = new State(newWorld,
             newWorld->score(),
             state->commands + moves[i]);
@@ -69,12 +69,15 @@ int main (int argc, char **argv)
         }
         if (newWorld->worldState == World::Running) {
           // Check if we've already had this state.
+          // cerr << "Hash: " << newWorld->hashMap() << endl;
           StateMapType::iterator it = stateMap.find(newWorld->hashMap());
           if (it != stateMap.end()) {
+            // cerr << "State Collision" << endl;
             // Check if the score is better.
             if (newWorld->score() > (*it->second).score) {
               stateMap[newWorld->hashMap()] = newState;
               bfsList.push_back(newState);
+              //cerr << "New state kept" << endl;
             }
           } else {
             stateMap[newWorld->hashMap()] = newState;

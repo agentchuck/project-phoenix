@@ -115,11 +115,17 @@ World::hashMap()
   int code;
   double addition = ( size % 101 ) / sqrt(3);
   double sum = 0;
+  int counter = 0;
   for (int i = 0; i < width; i++)
     for (int j = 0; j < height; j++)
     {
-      code = (int)mine[j][i];
-      sum += sin(code*0.001745329 + i*j/addition);
+      char inchar = mine[j][i];
+      if (inchar == '+') inchar = '*';
+      code = (int)inchar;
+      code = code << counter;
+      sum += sin(double(code)*0.001745329 + (double(i*j)/addition));
+      counter++;
+      counter = counter % 24;
     }
   return modf(sum, &addition)*100000000; // not that I care about addition any longer
 }
@@ -156,7 +162,7 @@ World::update(int i, int j, char changeTo)
   mine[height - j][i - 1] = changeTo;
 }
 
-void
+bool
 World::update(char move)
 {
   // Reset the changed flag.
@@ -166,7 +172,7 @@ World::update(char move)
   //cerr << "Move: " << move << endl;
   if (worldState != Running) {
     //cerr << "Invalid state. No more moves allowed." << endl;
-    return;
+    return false;
   }
   bool moveHorizontally = false;
   bool moveVertically = false;
@@ -206,20 +212,20 @@ World::update(char move)
   if ((movingInto == '#') ||
       (movingInto == 'L')) {
     // Invalid move.
-    invalidMove = true;
+    return false;
   } else if ((movingInto == '*') || (movingInto == '+')) {
     if (!moveHorizontally) {
       // Invalid move.
-      invalidMove = true;
+      return false;
     } else if (move == 'L') {
       if (at(to.first - 1, to.second) != ' ') {
-        invalidMove = true;
+        return false;
       } else {
         update(to.first - 1, to.second, '*');
       }
     } else if (move == 'R') {
       if (at(to.first + 1, to.second) != ' ') {
-        invalidMove = true;
+        return false;
       } else {
         update(to.first + 1, to.second, '*');
       }
@@ -258,6 +264,8 @@ World::update(char move)
     moves++;
   }
   //dump();
+
+  return true;
 }
 
 void
@@ -312,6 +320,19 @@ World::processGravity()
     }
   }
 }
+
+bool
+World::isEqual(World const& otherWorld)
+{
+  int i;
+  for0n(i, height) {
+    if (mine[i] != otherWorld.mine[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 
 void
 World::dump()

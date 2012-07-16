@@ -56,9 +56,11 @@ class World {
     void update(pii location, char changeTo);
     void update(int i, int j, char changeTo);
     // Make a move and update the world.
-    void update(char move);
+    // Returns false if the move is invalid.
+    bool update(char move);
     void processGravity();
 
+    bool isEqual(World const& otherWorld);
     // Dump out the state
     void dump();
 };
