@@ -207,7 +207,7 @@ World::update(char move)
       (movingInto == 'L')) {
     // Invalid move.
     invalidMove = true;
-  } else if (movingInto == '*') {
+  } else if ((movingInto == '*') || (movingInto == '+')) {
     if (!moveHorizontally) {
       // Invalid move.
       invalidMove = true;
@@ -231,6 +231,12 @@ World::update(char move)
     worldState = Won;
     //cerr << "YOU HAVE WON!" << endl;
   }
+  if (at(to.first, to.second + 1) == '+') {
+    // We've moved under a falling rock.
+    if (worldState = Running) {
+      worldState = Dead;
+    }
+  }
   if (invalidMove) {
     to = robotLocation;
     move = 'W';
@@ -238,6 +244,8 @@ World::update(char move)
     update(robotLocation, ' ');
     update(to, 'R');
   }
+
+  // Update the robot location.
   robotLocation = to;
 
   changed = (move != 'W');
@@ -263,31 +271,34 @@ World::processGravity()
         if (lambdasRemaining == 0) {
           update(i, j, 'O');
         }
-      } else if (thingAt == '*') {
+      } else if ((thingAt == '*') || (thingAt == '+')) {
         char thingBelow = at(i, j-1);
         pii  deadCheckAt(0, 0);
         if (thingBelow == ' ') {
           // Drop down
           update(i, j, ' ');
-          update(i, j-1, '*');
+          update(i, j-1, '+');
           deadCheckAt = make_pair(i, j-2);
-        } else if (thingBelow == '*') {
+        } else if ((thingBelow == '*') || (thingBelow == '+'))   {
           if ((at(i+1,j) == ' ') && (at(i+1,j-1) == ' ')) {
             update(i, j, ' ');
-            update(i+1, j-1, '*');
+            update(i+1, j-1, '+');
             deadCheckAt = make_pair(i+1, j-2);
           } else if ((at(i-1,j) == ' ') && (at(i-1,j-1) == ' ')) {
             update(i, j, ' ');
-            update(i-1, j-1, '*');
+            update(i-1, j-1, '+');
             deadCheckAt = make_pair(i-1, j-2);
           }
         } else if (thingBelow == '\\') {
           if ((at(i+1,j) == ' ') && (at(i+1,j-1) == ' ')) {
             update(i, j, ' ');
-            update(i+1, j-1, '*');
+            update(i+1, j-1, '+');
             deadCheckAt = make_pair(i+1, j-2);
           }
-        }
+        } else {
+          // Change the rock to a stopped rock in case it was moving.
+          update(i, j, '*');
+	}
         if (at(deadCheckAt) == 'R') {
           if (worldState == Running) {
             worldState = Dead;
