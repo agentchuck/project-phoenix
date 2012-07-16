@@ -9,9 +9,17 @@ class World {
   private:
     // TODO: make better 
     tMine mine;
-
+    
+    struct tMetaData
+    {
+      char tramps[10][2]; // [A,1] [A leads to 1]
+      pii trampsLoc[10][2]; //[A loc] [Target loc]
+      int trampsNum;      // Max of 9
+    } metaData;
     // Input a line
     void inputLine(string input);
+    void inputMeta(string input);
+
     // Finalize the input. This is called after all the input is read in.
     void finalizeInput();
 

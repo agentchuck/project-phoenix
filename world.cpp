@@ -9,6 +9,7 @@ World::World() :
   moves(0),
   lambdasRemaining(0),
   lambdasCollected(0),
+  metaData(),
   worldState(Initializing)
 {
   robotLocation.first = 0;
@@ -25,7 +26,8 @@ World::World(World const& fromWorld) :
   lambdasCollected(fromWorld.lambdasCollected),
   worldState(fromWorld.worldState),
   robotLocation(fromWorld.robotLocation),
-  exitLocation(fromWorld.exitLocation)
+  exitLocation(fromWorld.exitLocation),
+  metaData(fromWorld.metaData)
 {
   int i;
   for0n(i, height) {
@@ -41,7 +43,8 @@ World::World(World const& fromWorld, int fromI, int toI, int fromJ, int toJ) :
   lambdasCollected(fromWorld.lambdasCollected),
   worldState(fromWorld.worldState),
   robotLocation(fromWorld.robotLocation),
-  exitLocation(fromWorld.exitLocation)
+  exitLocation(fromWorld.exitLocation),
+  metaData(fromWorld.metaData)
 {
   // TODO: Make this work.
 }
@@ -50,14 +53,34 @@ World::World(World const& fromWorld, int fromI, int toI, int fromJ, int toJ) :
 void
 World::init()
 {
+  metaData.trampsNum = 0;
+
   std::string input_line;
+  bool meta_data_start = false;
   while (std::cin) {
     getline(std::cin, input_line);
     if (input_line.length() > 0) {
-      inputLine(input_line);
+      if (!meta_data_start) inputLine(input_line);
+      else inputMeta(input_line);
     }
+    else meta_data_start = true;
   }
   finalizeInput();
+}
+
+void
+World::inputMeta(string input)
+{
+  // Trampoline A targets 1
+  if (input.find("Trampoline")>=0) 
+  {
+    metaData.tramps[metaData.trampsNum][0] = input[11]; // Horrible code
+    metaData.tramps[metaData.trampsNum][1] = input[21]; // Horrible code
+    //cerr << metaData.tramps[metaData.trampsNum];
+    metaData.trampsNum++;
+  }
+  // Water
+  // Growth
 }
 
 void
@@ -72,6 +95,7 @@ World::inputLine(string input)
     // Found the Robot. Mark its location.
     robotLocation.first = pos + 1;
     robotLocation.second = height;
+    //cerr << "ROBOT" << robotLocation.first << " " << robotLocation.second << endl;
   }
   pos = input.find("L");
   if(string::npos != pos)
@@ -90,9 +114,31 @@ World::finalizeInput()
 {
   robotLocation.second = height - robotLocation.second;
   exitLocation.second = height - exitLocation.second;
+  //cerr << "ROBOT" << robotLocation.first << " " << robotLocation.second << endl;
+
   worldState = Running;
   //cerr << "Robot at: " << robotLocation.first << "x" << robotLocation.second << endl;
   //cerr << "Exit at: " << exitLocation.first << "x" << exitLocation.second << endl;
+  // Trampoline
+  int i,j;
+  for1n(i, width) {
+    for1n(j, height) {
+      char thingAt = at(i, j);
+      int code = thingAt;
+      //if (thingAt == 'R') cerr << i << j << 'R' << endl;
+
+      if ((code >= 49) && (code <= 57))
+        for (int k=0; k<metaData.trampsNum; k++){
+          if (metaData.tramps[k][1] == thingAt) metaData.trampsLoc[k][1] = make_pair(i,j);
+          //cerr << i << " " << j << " " << thingAt << endl;
+    }
+      if ((code >= 65) && (code <= 73))
+        for (int k=0; k<metaData.trampsNum; k++)
+          if (metaData.tramps[k][0] == thingAt) metaData.trampsLoc[k][0] = make_pair(i,j);
+        // ((code >= 49) && (code <= 57)))   1-9
+        // ((code >= 65) && (code <= 73))    A-I
+    }}
+
 }
 
 int
@@ -221,11 +267,13 @@ World::update(char move)
   bool invalidMove = false;
   char movingInto = at(to);
   cerr << "Moving into: " << movingInto << endl;
+  int code = movingInto;
 
   if ((movingInto == '#') ||
-      (movingInto == 'L')) {
+      (movingInto == 'L') || ((code >= 49) && (code <= 57))) { // 49-57 are ASCII for 1-9
     // Invalid move.
     invalidMove = true;
+
   } else if ((movingInto == '*') || (movingInto == '@')) {
     if (!moveHorizontally) {
       // Invalid move.
@@ -249,6 +297,26 @@ World::update(char move)
   } else if (movingInto == 'O') {
     worldState = Won;
     cerr << "YOU HAVE WON!" << endl;
+  } else if ((code >= 65) && (code <= 73)) // ASCII for A - I
+  { // Trampolines
+    for (int k = 0; k < metaData.trampsNum; k++){
+      if (metaData.tramps[k][0] == movingInto){
+        // Robot jumps!
+        //cerr << "YES!" << metaData.tramps[k][0] << " " << metaData.tramps[k][1] << endl; // delete 
+        //cerr << metaData.trampsLoc[k][1].first << " " << metaData.trampsLoc[k][1].second  << endl; // ???
+        update(robotLocation, ' ');
+        update(to, ' '); // trampline destroys
+        //update(metaData.trampsLoc[k][0].first, metaData.trampsLoc[k][0].second, 'Z');
+        //update(metaData.trampsLoc[k][1], 'R');
+
+        robotLocation = metaData.trampsLoc[k][0];
+        to = metaData.trampsLoc[k][1];
+        // deletion of similar tramplines
+        for (int z = 0; z < metaData.trampsNum; z++)
+          if ((metaData.tramps[z][1] == metaData.tramps[k][1]) && (z != k))
+            update(metaData.trampsLoc[z][0], ' ');
+      }
+    }
   }
   if (invalidMove) {
     to = robotLocation;
@@ -277,12 +345,11 @@ tMine oldMine;
 void
 World::processGravity()
 {
+  //cerr << lambdasRemaining << "L" << endl;
   int i, j;  
-  memmove(oldMine, mine, sizeof(mine));
-  //for1n(i, width) {
-  //  for1n(j, height) {
-  //    oldMine[j][i] = mine[j][i];
-  //  }}
+  for1n(i, width) 
+    for1n(j,height)
+      oldMine[j,i] = mine[j,i];
 
   for1n(i, width) {
     for1n(j, height) {
@@ -303,20 +370,22 @@ World::processGravity()
           deadCheckAt = make_pair(i, j-2);
         } else if (thingBelow == '*' || thingBelow == '@') {
           if ((at(i+1,j, oldMine) == ' ') && (at(i+1,j-1, oldMine) == ' ')) {
-          //Horock Crash check: N/A
-          //if ((thingAt == '@') && (at(i+1, j-2) != ' ' )) thingAt = '\\';
+          //Horock Crash check: yes, valid as per comment
+            if ((thingAt == '@') && (at(i+1, j-2, oldMine) != ' ' )) thingAt = '\\';
             update(i, j, ' ');
             update(i+1, j-1, thingAt);
             deadCheckAt = make_pair(i+1, j-2);
           } else if ((at(i-1,j, oldMine) == ' ') && (at(i-1,j-1, oldMine) == ' ')) {
-          //Horock Crash check: N/A)
-          //if ((thingAt == '@') && (at(i-1, j-2) != ' ' )) thingAt = '\\';
+          //Horock Crash check: yes, valid as per comment
+            if ((thingAt == '@') && (at(i-1, j-2, oldMine) != ' ' )) {thingAt = '\\'; }
             update(i, j, ' ');
             update(i-1, j-1, thingAt);
             deadCheckAt = make_pair(i-1, j-2);
           }
         } else if (thingBelow == '\\') {
-          if ((at(i+1,j, oldMine) == ' ') && (at(i+1,j-1, oldMine) == ' ')) {
+            if ((at(i+1,j, oldMine) == ' ') && (at(i+1,j-1, oldMine) == ' ')) {
+            //Horock Crash check: yes, valid as per comment
+            if ((thingAt == '@') && (at(i+1, j-2, oldMine) != ' ' )) thingAt = '\\';
             update(i, j, ' ');
             update(i+1, j-1, thingAt);
             deadCheckAt = make_pair(i+1, j-2);
@@ -334,7 +403,7 @@ World::processGravity()
       }
     }
   }
-  dump();
+  //dump();
 }
 
 void
