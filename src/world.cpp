@@ -163,7 +163,13 @@ World::update(int i, int j, char changeTo)
 }
 
 bool
-World::update(char move)
+World::makeStep(string::iterator it)
+{
+  return makeStep(*it);
+}
+
+bool
+World::makeStep(char move)
 {
   // Reset the changed flag.
   changed = false;

@@ -21,7 +21,7 @@ int main (int argc, char **argv)
   size_t num_moves = input_line.length();
   int move_counter;
   for0n(move_counter, num_moves) {
-    world.update(input_line[move_counter]);
+    world.makeStep(input_line[move_counter]);
     if (world.worldState != World::Running) {
       break;
     }

@@ -56,11 +56,17 @@ int main (int argc, char **argv)
     // TODO: Full of memory leaks...
     State* state = bfsList.front();
 
+    World* stateWorld = new World(world);
+    for (string::iterator sit = state->commands.begin();
+         sit != state->commands.end();
+         sit++) {
+      stateWorld->makeStep(*sit);
+    }
     int i;
     for0n(i, 6) {
-      World* newWorld = new World(*state->world);
-      if ((newWorld->update(moves[i])) && (newWorld->changed)) {
-        State* newState = new State(newWorld,
+      World* newWorld = new World(*stateWorld);
+      if ((newWorld->makeStep(moves[i])) && (newWorld->changed)) {
+        State* newState = new State(NULL,
             newWorld->score(),
             state->commands + moves[i]);
         if (newWorld->score() > bestScore) {
@@ -88,16 +94,14 @@ int main (int argc, char **argv)
           //cerr << "WON!";
           rxSIGINT = true;
           free(newState);
-          free(newWorld);
           break;
         } else {
           free(newState);
-          free(newWorld);
         }
-      } else {
-        free(newWorld);
       }
+      free(newWorld);
     }
+    free(stateWorld);
 
     free(state);
     bfsList.pop_front();

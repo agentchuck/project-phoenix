@@ -57,7 +57,8 @@ class World {
     void update(int i, int j, char changeTo);
     // Make a move and update the world.
     // Returns false if the move is invalid.
-    bool update(char move);
+    bool makeStep(string::iterator it);
+    bool makeStep(char move);
     void processGravity();
 
     bool isEqual(World const& otherWorld);
