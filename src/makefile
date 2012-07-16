@@ -10,6 +10,7 @@ go: main.cpp world.cpp world.hh
 
 lifter: lifter.cpp world.cpp world.hh includes.hh
 	$(CC) lifter.cpp world.cpp -I. -o lifter
+	cp lifter ..
 
 .PHONY: clean
 clean:
